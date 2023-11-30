@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package reddit;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "tomy0000000/grpc-reddit/reddit";
+
+// The reddit service definition.
+service Reddit {
+  // Create a post
+  rpc CreatePost (CreatePostRequest) returns (CreatePostResponse) {}
+}
+
+enum PostState {
+  NORMAL_POST = 0;
+  LOCKED_POST = 1;
+  HIDDEN_POST = 2;
+}
+
+message Post {
+  string title = 1;
+  string content = 2;
+  optional string videoURL = 3;
+  optional string imageURL = 4;
+  optional User author = 5;
+  int32 score = 6;
+  PostState state = 7;
+  google.protobuf.Timestamp publicationDate = 8;
+}
+
+message CreatePostRequest {
+  Post post = 1;
+}
+
+message CreatePostResponse {
+  Post post = 1;
+}
