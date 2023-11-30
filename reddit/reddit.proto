@@ -19,20 +19,23 @@ service Reddit {
 
 
 enum SubRedditState {
-  PUBLIC = 0;
-  PRIVATE = 1;
-  HIDDEN = 2;
+  SUBREDDITSTATE_UNSPECIFIED = 0;
+  PUBLIC = 1;
+  PRIVATE = 2;
+  HIDDEN = 3;
 }
 
 enum PostState {
-  NORMAL_POST = 0;
-  LOCKED_POST = 1;
-  HIDDEN_POST = 2;
+  POSTSTATE_UNSPECIFIED = 0;
+  NORMAL_POST = 1;
+  LOCKED_POST = 2;
+  HIDDEN_POST = 3;
 }
 
 enum CommentState {
-  NORMAL_COMMENT = 0;
-  LOCKED_COMMENT = 1;
+  COMMENTSTATE_UNSPECIFIED = 0;
+  NORMAL_COMMENT = 1;
+  LOCKED_COMMENT = 2;
 }
 
 
@@ -47,7 +50,7 @@ message User {
 
 message SubReddit {
   string name = 1;
-  SubRedditState state = 2;
+  SubRedditState state = 2; // State should never be unspecified
   repeated string tags = 3;
 }
 
@@ -59,7 +62,7 @@ message Post {
   optional string imageURL = 5;
   optional User author = 6;
   int32 score = 7;
-  PostState state = 8;
+  PostState state = 8; // State should never be unspecified
   google.type.Date publicationDate = 9;
 }
 
@@ -68,7 +71,7 @@ message Comment {
   optional User author = 2;
   Comment parent = 3;
   int32 score = 4;
-  CommentState state = 5;
+  CommentState state = 5; // State should never be unspecified
   google.type.Date publicationDate = 6;
 }
 
