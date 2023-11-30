@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package reddit;
 
-import "google/protobuf/timestamp.proto";
+import "google/type/date.proto";
 
 option go_package = "tomy0000000/grpc-reddit/reddit";
 
@@ -60,7 +60,7 @@ message Post {
   optional User author = 6;
   int32 score = 7;
   PostState state = 8;
-  google.protobuf.Timestamp publicationDate = 9;
+  google.type.Date publicationDate = 9;
 }
 
 message Comment {
@@ -69,7 +69,7 @@ message Comment {
   Comment parent = 3;
   int32 score = 4;
   CommentState state = 5;
-  google.protobuf.Timestamp publicationDate = 6;
+  google.type.Date publicationDate = 6;
 }
 
 message CreatePostRequest {
