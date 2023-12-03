@@ -87,16 +87,17 @@ message Post {
   int32 score = 8;
   PostState state = 9; // State should never be unspecified
   google.type.Date publicationDate = 10;
+  repeated string comments = 11;
 }
 
 message Comment {
   int32 id = 1;
   string content = 2;
-  optional User author = 3;
-  Comment parent = 4;
-  int32 score = 5;
-  CommentState state = 6; // State should never be unspecified
-  google.type.Date publicationDate = 7;
+  User author = 3;
+  int32 score = 6;
+  CommentState state = 7; // State should never be unspecified
+  google.type.Date publicationDate = 8;
+  repeated string comments = 9;
 }
 
 
