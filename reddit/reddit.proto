@@ -10,6 +10,27 @@ option go_package = "tomy0000000/grpc-reddit/reddit";
 service Reddit {
   // Create a post
   rpc CreatePost (CreatePostRequest) returns (CreatePostResponse) {}
+
+  // Upvote or downvote a Post
+  rpc VotePost (VotePostRequest) returns (VotePostResponse) {}
+
+  // Retrieve Post content
+  rpc GetPost (GetPostRequest) returns (GetPostResponse) {}
+
+  // Create a Comment
+  rpc CreateComment (CreateCommentRequest) returns (CreateCommentResponse) {}
+
+  // Upvote or downvote a Comment
+  rpc VoteComment (VoteCommentRequest) returns (VoteCommentResponse) {}
+
+  // Retrieving a list of N most upvoted comments under a post
+  rpc GetTopComments (GetTopCommentsRequest) returns (GetTopCommentsResponse) {}
+
+  // Expand a comment branch
+  rpc ExpandCommentBranch (ExpandCommentBranchRequest) returns (ExpandCommentBranchResponse) {}
+
+  // Monitor updates
+  rpc MonitorUpdates (MonitorUpdatesRequest) returns (stream MonitorUpdatesResponse) {}
 }
 
 
@@ -78,10 +99,94 @@ message Comment {
   google.type.Date publicationDate = 7;
 }
 
+
+/* 
+ * RPC Messages
+ */
+
+
+// The request message for creating a post
 message CreatePostRequest {
   Post post = 1;
 }
 
+// The response message for creating a post
 message CreatePostResponse {
   Post post = 1;
+}
+
+// The request message for upvoting or downvoting a post
+message VotePostRequest {
+  int32 postID = 1;
+  int32 voterID = 2;
+  bool upvote = 3;
+}
+
+// The response message for upvoting or downvoting a post
+message VotePostResponse {
+  int32 score = 1;
+}
+
+// The request message for retrieving a post
+message GetPostRequest {
+  int32 postID = 1;
+}
+
+// The response message for retrieving a post
+message GetPostResponse {
+  Post post = 1;
+}
+
+// The request message for creating a comment
+message CreateCommentRequest {
+  Comment comment = 1;
+}
+
+// The response message for creating a comment
+message CreateCommentResponse {
+  Comment comment = 1;
+}
+
+// The request message for upvoting or downvoting a comment
+message VoteCommentRequest {
+  int32 commentID = 1;
+  int32 voterID = 2;
+  bool upvote = 3;
+}
+
+// The response message for upvoting or downvoting a comment
+message VoteCommentResponse {
+  int32 score = 1;
+}
+
+// The request message for retrieving a list of N most upvoted comments under a post
+message GetTopCommentsRequest {
+  int32 postID = 1;
+  int32 quantity = 2;
+}
+
+// The response message for retrieving a list of N most upvoted comments under a post
+message GetTopCommentsResponse {
+  repeated Comment comments = 1;
+}
+
+// The request message for expanding a comment branch
+message ExpandCommentBranchRequest {
+  int32 commentID = 1;
+}
+
+// The response message for expanding a comment branch
+message ExpandCommentBranchResponse {
+  repeated Comment comments = 1;
+}
+
+// The request message for monitoring updates
+message MonitorUpdatesRequest {
+  int32 userID = 1;
+}
+
+// The response message for monitoring updates
+message MonitorUpdatesResponse {
+  repeated Post posts = 1;
+  repeated Comment comments = 2;
 }

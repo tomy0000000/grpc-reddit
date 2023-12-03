@@ -24,6 +24,20 @@ const _ = grpc.SupportPackageIsVersion7
 type RedditClient interface {
 	// Create a post
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*CreatePostResponse, error)
+	// Upvote or downvote a Post
+	VotePost(ctx context.Context, in *VotePostRequest, opts ...grpc.CallOption) (*VotePostResponse, error)
+	// Retrieve Post content
+	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*GetPostResponse, error)
+	// Create a Comment
+	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error)
+	// Upvote or downvote a Comment
+	VoteComment(ctx context.Context, in *VoteCommentRequest, opts ...grpc.CallOption) (*VoteCommentResponse, error)
+	// Retrieving a list of N most upvoted comments under a post
+	GetTopComments(ctx context.Context, in *GetTopCommentsRequest, opts ...grpc.CallOption) (*GetTopCommentsResponse, error)
+	// Expand a comment branch
+	ExpandCommentBranch(ctx context.Context, in *ExpandCommentBranchRequest, opts ...grpc.CallOption) (*ExpandCommentBranchResponse, error)
+	// Monitor updates
+	MonitorUpdates(ctx context.Context, in *MonitorUpdatesRequest, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error)
 }
 
 type redditClient struct {
@@ -43,12 +57,112 @@ func (c *redditClient) CreatePost(ctx context.Context, in *CreatePostRequest, op
 	return out, nil
 }
 
+func (c *redditClient) VotePost(ctx context.Context, in *VotePostRequest, opts ...grpc.CallOption) (*VotePostResponse, error) {
+	out := new(VotePostResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/VotePost", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*GetPostResponse, error) {
+	out := new(GetPostResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/GetPost", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error) {
+	out := new(CreateCommentResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/CreateComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) VoteComment(ctx context.Context, in *VoteCommentRequest, opts ...grpc.CallOption) (*VoteCommentResponse, error) {
+	out := new(VoteCommentResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/VoteComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) GetTopComments(ctx context.Context, in *GetTopCommentsRequest, opts ...grpc.CallOption) (*GetTopCommentsResponse, error) {
+	out := new(GetTopCommentsResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/GetTopComments", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) ExpandCommentBranch(ctx context.Context, in *ExpandCommentBranchRequest, opts ...grpc.CallOption) (*ExpandCommentBranchResponse, error) {
+	out := new(ExpandCommentBranchResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/ExpandCommentBranch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) MonitorUpdates(ctx context.Context, in *MonitorUpdatesRequest, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Reddit_ServiceDesc.Streams[0], "/reddit.Reddit/MonitorUpdates", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &redditMonitorUpdatesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Reddit_MonitorUpdatesClient interface {
+	Recv() (*MonitorUpdatesResponse, error)
+	grpc.ClientStream
+}
+
+type redditMonitorUpdatesClient struct {
+	grpc.ClientStream
+}
+
+func (x *redditMonitorUpdatesClient) Recv() (*MonitorUpdatesResponse, error) {
+	m := new(MonitorUpdatesResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RedditServer is the server API for Reddit service.
 // All implementations must embed UnimplementedRedditServer
 // for forward compatibility
 type RedditServer interface {
 	// Create a post
 	CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error)
+	// Upvote or downvote a Post
+	VotePost(context.Context, *VotePostRequest) (*VotePostResponse, error)
+	// Retrieve Post content
+	GetPost(context.Context, *GetPostRequest) (*GetPostResponse, error)
+	// Create a Comment
+	CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error)
+	// Upvote or downvote a Comment
+	VoteComment(context.Context, *VoteCommentRequest) (*VoteCommentResponse, error)
+	// Retrieving a list of N most upvoted comments under a post
+	GetTopComments(context.Context, *GetTopCommentsRequest) (*GetTopCommentsResponse, error)
+	// Expand a comment branch
+	ExpandCommentBranch(context.Context, *ExpandCommentBranchRequest) (*ExpandCommentBranchResponse, error)
+	// Monitor updates
+	MonitorUpdates(*MonitorUpdatesRequest, Reddit_MonitorUpdatesServer) error
 	mustEmbedUnimplementedRedditServer()
 }
 
@@ -58,6 +172,27 @@ type UnimplementedRedditServer struct {
 
 func (UnimplementedRedditServer) CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePost not implemented")
+}
+func (UnimplementedRedditServer) VotePost(context.Context, *VotePostRequest) (*VotePostResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VotePost not implemented")
+}
+func (UnimplementedRedditServer) GetPost(context.Context, *GetPostRequest) (*GetPostResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPost not implemented")
+}
+func (UnimplementedRedditServer) CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
+}
+func (UnimplementedRedditServer) VoteComment(context.Context, *VoteCommentRequest) (*VoteCommentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteComment not implemented")
+}
+func (UnimplementedRedditServer) GetTopComments(context.Context, *GetTopCommentsRequest) (*GetTopCommentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopComments not implemented")
+}
+func (UnimplementedRedditServer) ExpandCommentBranch(context.Context, *ExpandCommentBranchRequest) (*ExpandCommentBranchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExpandCommentBranch not implemented")
+}
+func (UnimplementedRedditServer) MonitorUpdates(*MonitorUpdatesRequest, Reddit_MonitorUpdatesServer) error {
+	return status.Errorf(codes.Unimplemented, "method MonitorUpdates not implemented")
 }
 func (UnimplementedRedditServer) mustEmbedUnimplementedRedditServer() {}
 
@@ -90,6 +225,135 @@ func _Reddit_CreatePost_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Reddit_VotePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VotePostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).VotePost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/VotePost",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).VotePost(ctx, req.(*VotePostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_GetPost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).GetPost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/GetPost",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).GetPost(ctx, req.(*GetPostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_CreateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).CreateComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/CreateComment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).CreateComment(ctx, req.(*CreateCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_VoteComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VoteCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).VoteComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/VoteComment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).VoteComment(ctx, req.(*VoteCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_GetTopComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopCommentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).GetTopComments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/GetTopComments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).GetTopComments(ctx, req.(*GetTopCommentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_ExpandCommentBranch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExpandCommentBranchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).ExpandCommentBranch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/ExpandCommentBranch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).ExpandCommentBranch(ctx, req.(*ExpandCommentBranchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reddit_MonitorUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(MonitorUpdatesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RedditServer).MonitorUpdates(m, &redditMonitorUpdatesServer{stream})
+}
+
+type Reddit_MonitorUpdatesServer interface {
+	Send(*MonitorUpdatesResponse) error
+	grpc.ServerStream
+}
+
+type redditMonitorUpdatesServer struct {
+	grpc.ServerStream
+}
+
+func (x *redditMonitorUpdatesServer) Send(m *MonitorUpdatesResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Reddit_ServiceDesc is the grpc.ServiceDesc for Reddit service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -101,7 +365,37 @@ var Reddit_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CreatePost",
 			Handler:    _Reddit_CreatePost_Handler,
 		},
+		{
+			MethodName: "VotePost",
+			Handler:    _Reddit_VotePost_Handler,
+		},
+		{
+			MethodName: "GetPost",
+			Handler:    _Reddit_GetPost_Handler,
+		},
+		{
+			MethodName: "CreateComment",
+			Handler:    _Reddit_CreateComment_Handler,
+		},
+		{
+			MethodName: "VoteComment",
+			Handler:    _Reddit_VoteComment_Handler,
+		},
+		{
+			MethodName: "GetTopComments",
+			Handler:    _Reddit_GetTopComments_Handler,
+		},
+		{
+			MethodName: "ExpandCommentBranch",
+			Handler:    _Reddit_ExpandCommentBranch_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "MonitorUpdates",
+			Handler:       _Reddit_MonitorUpdates_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "reddit/reddit.proto",
 }
