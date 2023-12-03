@@ -1,0 +1,5 @@
+{
+  "files.readonlyInclude": {
+    "reddit/*.pb.go": true
+  }
+}
