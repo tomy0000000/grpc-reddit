@@ -17,7 +17,7 @@ protoc --go_out=. --go_opt=paths=source_relative \
 - Run server
 
 ```shell
-go run server/server.go
+go run ./server
 ```
 
 - Run client

@@ -34,9 +34,9 @@ func main() {
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.CreatePost(ctx, &pb.CreatePostRequest{Post: &pb.Post{Title: "Hello", Content: "World", Author: &pb.User{Id: 1}}})
+	r, err := c.CreatePost(ctx, &pb.CreatePostRequest{Post: &pb.Post{Title: "Hello", Content: "World", SubReddit: &pb.SubReddit{Id: 1}, Author: &pb.User{Id: 1}}})
 	if err != nil {
 		log.Fatalf("could not create post: %v", err)
 	}
-	log.Printf("Post Created: %s", r.GetPost())
+	log.Printf("Post Created: %v", r.GetPost())
 }
