@@ -1,4 +1,4 @@
-module tomy0000000/grpc-reddit/reddit
+module github.com/tomy0000000/grpc-reddit/reddit
 
 go 1.21
 
