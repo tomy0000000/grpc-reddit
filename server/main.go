@@ -43,6 +43,18 @@ func (s *gRPCserver) CreatePost(ctx context.Context, in *pb.CreatePostRequest) (
 	return &pb.CreatePostResponse{Post: post}, nil
 }
 
+func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.GetPostResponse, error) {
+	log.Printf("GetPost: %v", in)
+	id := in.GetPostID()
+
+	// Get the post from the database
+	post, err := s.sqlClient.GetPost(int(id))
+	if err != nil {
+		log.Fatalf("Error getting post from database: %v", err)
+	}
+	return &pb.GetPostResponse{Post: post}, nil
+}
+
 func main() {
 	// Parse the flags
 	flag.Parse()

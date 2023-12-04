@@ -46,16 +46,14 @@ func (c *SQLClient) CreatePost(post *pb.Post) (int, error) {
 
 func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 	// Get the post from the database
-	row, err := c.db.Query("SELECT * from post WHERE id = (?)", id)
-	if err != nil {
-		return nil, err
+	row := c.db.QueryRow("SELECT * from post WHERE id = (?)", id)
+	post := &pb.Post{
+		SubReddit: &pb.SubReddit{},
+		Author:    &pb.User{},
 	}
-	post := &pb.Post{}
-	subReddit := &pb.SubReddit{}
-	author := &pb.User{}
-	if err = row.Scan(
-		&post.Id, &post.Title, &post.Content, &subReddit.Id,
-		&post.VideoURL, &post.ImageURL, &author.Id, &post.Score,
+	if err := row.Scan(
+		&post.Id, &post.Title, &post.Content, &post.SubReddit.Id,
+		&post.VideoURL, &post.ImageURL, &post.Author.Id, &post.Score,
 		&post.State, &post.PublicationDate, &post.Comments,
 	); err == sql.ErrNoRows {
 		return nil, err

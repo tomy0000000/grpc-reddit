@@ -39,4 +39,10 @@ func main() {
 		log.Fatalf("could not create post: %v", err)
 	}
 	log.Printf("Post Created: %v", r.GetPost())
+
+	r2, err := c.GetPost(ctx, &pb.GetPostRequest{PostID: int32(1)})
+	if err != nil {
+		log.Fatalf("could not get post: %v", err)
+	}
+	log.Printf("Post Retrieved: %v", r2.GetPost())
 }
