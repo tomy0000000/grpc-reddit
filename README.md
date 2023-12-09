@@ -23,5 +23,5 @@ go run ./server
 - Run client
 
 ```shell
-go run client/client.go
+go run ./client
 ```
