@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/fatih/color"
 	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/grpc"
 
@@ -24,48 +25,52 @@ type gRPCserver struct {
 }
 
 func (s *gRPCserver) CreatePost(ctx context.Context, in *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
-	postIn := in.GetPost()
-	log.Printf("Received: %v", postIn)
+	log.Print(color.YellowString("[CreatePost] Received: %v", in))
 
 	// Insert the post into the database
-	id, err := s.sqlClient.CreatePost(postIn)
+	id, err := s.sqlClient.CreatePost(in.GetPost())
 	if err != nil {
-		log.Fatalf("Error inserting into database: %v", err)
+		log.Fatal(color.RedString("[CreatePost] DB error: %v", err))
 	}
-
-	log.Printf("Post created with id: %d", id)
 
 	// Get the post from the database
 	post, err := s.sqlClient.GetPost(id)
 	if err != nil {
-		log.Fatalf("Error getting post from database: %v", err)
+		log.Fatal(color.RedString("[CreatePost] DB error: %v", err))
 	}
-	return &pb.CreatePostResponse{Post: post}, nil
+
+	response := &pb.CreatePostResponse{Post: post}
+	log.Print(color.GreenString("[CreatePost] Reponse: %v", response))
+	return response, nil
 }
 
 func (s *gRPCserver) VotePost(ctx context.Context, in *pb.VotePostRequest) (*pb.VotePostResponse, error) {
-	log.Printf("VotePost: %v", in)
-	id := in.GetPostID()
-	upvote := in.GetUpvote()
+	log.Print(color.YellowString("[VotePost] Received: %v", in))
 
 	// Increment/Decrement the score of the post
-	newScore, err := s.sqlClient.VotePost(int(id), upvote)
+	newScore, err := s.sqlClient.VotePost(int(in.GetPostID()), in.GetUpvote())
 	if err != nil {
-		log.Fatalf("Error voting post in database: %v", err)
+		log.Fatal(color.RedString("[VotePost] DB error: %v", err))
 	}
-	return &pb.VotePostResponse{Score: int32(newScore)}, nil
+
+	response := &pb.VotePostResponse{Score: int32(newScore)}
+	log.Print(color.GreenString("[VotePost] Reponse: %v", response))
+	return response, nil
 }
 
 func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.GetPostResponse, error) {
-	log.Printf("GetPost: %v", in)
+	log.Print(color.YellowString("[GetPost] Received: %v", in))
 	id := in.GetPostID()
 
 	// Get the post from the database
 	post, err := s.sqlClient.GetPost(int(id))
 	if err != nil {
-		log.Fatalf("Error getting post from database: %v", err)
+		log.Fatal(color.RedString("[GetPost] DB error: %v", err))
 	}
-	return &pb.GetPostResponse{Post: post}, nil
+
+	response := &pb.GetPostResponse{Post: post}
+	log.Print(color.GreenString("[GetPost] Reponse: %v", response))
+	return response, nil
 }
 
 func main() {
@@ -77,19 +82,19 @@ func main() {
 	var err error
 	s.sqlClient, err = NewSQLClient()
 	if err != nil {
-		log.Fatalf("Error opening database: %v", err)
+		log.Fatal(color.RedString("[Server] Error opening database: %v", err))
 	}
 
 	// Launch the server
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *addr, *port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal(color.RedString("[Server] Failed to listen: %v", err))
 	}
 
 	gs := grpc.NewServer()
 	pb.RegisterRedditServer(gs, s)
-	log.Printf("server listening at %v", lis.Addr())
+	log.Print(color.GreenString("[Server] Listening at %v", lis.Addr()))
 	if err := gs.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatal(color.RedString("[Server] Failed to serve: %v", err))
 	}
 }
