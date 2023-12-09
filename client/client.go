@@ -61,10 +61,6 @@ func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID i
 	return response.Post, nil
 }
 
-func (s *RedditAPIClient) runCreatePost() {
-	s.CreatePost("Hello", "World", 1, 1)
-}
-
 func (s *RedditAPIClient) VotePost(PostID int32, Upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -82,10 +78,6 @@ func (s *RedditAPIClient) VotePost(PostID int32, Upvote bool) (int32, error) {
 	return response.Score, nil
 }
 
-func (s *RedditAPIClient) runVotePost() {
-	s.VotePost(1, true)
-}
-
 func (s *RedditAPIClient) GetPost(PostID int32) (*pb.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -100,10 +92,6 @@ func (s *RedditAPIClient) GetPost(PostID int32) (*pb.Post, error) {
 	}
 	log.Print(color.GreenString("[GetPost] Received: %v", response))
 	return response.Post, nil
-}
-
-func (s *RedditAPIClient) runGetPost() {
-	s.GetPost(1)
 }
 
 func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Comment, error) {
@@ -129,10 +117,6 @@ func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Com
 	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) runCreateComment() {
-	s.CreateComment(1, "Hello World")
-}
-
 func (s *RedditAPIClient) VoteComment(CommentID int32, Upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -147,10 +131,6 @@ func (s *RedditAPIClient) VoteComment(CommentID int32, Upvote bool) (int32, erro
 	}
 	log.Print(color.GreenString("[VoteComment] Received: %v", response))
 	return response.Score, nil
-}
-
-func (s *RedditAPIClient) runVoteComment() {
-	s.VoteComment(1, true)
 }
 
 func (s *RedditAPIClient) GetComment(CommentID int32) (*pb.Comment, error) {
@@ -169,10 +149,6 @@ func (s *RedditAPIClient) GetComment(CommentID int32) (*pb.Comment, error) {
 	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) runGetComment() {
-	s.GetComment(1)
-}
-
 func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -189,10 +165,6 @@ func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Co
 	return response.Comments, nil
 }
 
-func (s *RedditAPIClient) runGetTopComments() {
-	s.GetTopComments(2, 10)
-}
-
 func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32) ([]*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -207,6 +179,34 @@ func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32) ([]*pb.Comment, e
 	}
 	log.Print(color.GreenString("[ExpandCommentBranch] Received: %v", response))
 	return response.Comments, nil
+}
+
+func (s *RedditAPIClient) runCreatePost() {
+	s.CreatePost("Hello", "World", 1, 1)
+}
+
+func (s *RedditAPIClient) runVotePost() {
+	s.VotePost(1, true)
+}
+
+func (s *RedditAPIClient) runGetPost() {
+	s.GetPost(1)
+}
+
+func (s *RedditAPIClient) runCreateComment() {
+	s.CreateComment(1, "Hello World")
+}
+
+func (s *RedditAPIClient) runVoteComment() {
+	s.VoteComment(1, true)
+}
+
+func (s *RedditAPIClient) runGetComment() {
+	s.GetComment(1)
+}
+
+func (s *RedditAPIClient) runGetTopComments() {
+	s.GetTopComments(2, 10)
 }
 
 func (s *RedditAPIClient) runExpandCommentBranch() {
