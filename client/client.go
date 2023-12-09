@@ -13,13 +13,32 @@ import (
 )
 
 const (
-	defaultName = "Tomy"
+	TIMEOUT = 1000 * time.Second
 )
 
 var (
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
-	name = flag.String("name", defaultName, "Name to greet")
 )
+
+func runCreatePost(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+	r, err := c.CreatePost(ctx, &pb.CreatePostRequest{Post: &pb.Post{Title: "Hello", Content: "World", SubReddit: &pb.SubReddit{Id: 1}, Author: &pb.User{Id: 1}}})
+	if err != nil {
+		log.Fatalf("could not create post: %v", err)
+	}
+	log.Printf("Post Created: %v", r.GetPost())
+}
+
+func runGetPost(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+	r2, err := c.GetPost(ctx, &pb.GetPostRequest{PostID: int32(1)})
+	if err != nil {
+		log.Fatalf("could not get post: %v", err)
+	}
+	log.Printf("Post Retrieved: %v", r2.GetPost())
+}
 
 func main() {
 	flag.Parse()
@@ -31,18 +50,6 @@ func main() {
 	defer conn.Close()
 	c := pb.NewRedditClient(conn)
 
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	r, err := c.CreatePost(ctx, &pb.CreatePostRequest{Post: &pb.Post{Title: "Hello", Content: "World", SubReddit: &pb.SubReddit{Id: 1}, Author: &pb.User{Id: 1}}})
-	if err != nil {
-		log.Fatalf("could not create post: %v", err)
-	}
-	log.Printf("Post Created: %v", r.GetPost())
-
-	r2, err := c.GetPost(ctx, &pb.GetPostRequest{PostID: int32(1)})
-	if err != nil {
-		log.Fatalf("could not get post: %v", err)
-	}
-	log.Printf("Post Retrieved: %v", r2.GetPost())
+	runCreatePost(c)
+	runGetPost(c)
 }
