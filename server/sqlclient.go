@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -31,7 +30,7 @@ func (c *SQLClient) CreatePost(post *pb.Post) (int, error) {
 		c.db.Exec("INSERT INTO post (title, content, subRedditID, videoURL, imageURL, authorID, score, state, publicationDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			post.GetTitle(), post.GetContent(), post.GetSubReddit().GetId(),
 			post.GetVideoURL(), post.GetImageURL(), post.GetAuthor().GetId(),
-			post.GetScore(), post.GetState().Number(), time.Now(),
+			post.GetScore(), post.GetState().Number(), post.GetPublicationDate(),
 		)
 	if err != nil {
 		return -1, err
@@ -80,7 +79,7 @@ func (c *SQLClient) CreateComment(comment *pb.Comment) (int, error) {
 	res, err :=
 		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate, parent, parentID) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			comment.GetContent(), comment.GetAuthor().GetId(),
-			comment.GetScore(), comment.GetState().Number(), time.Now(),
+			comment.GetScore(), comment.GetState().Number(), comment.GetPublicationDate(),
 			comment.GetParent().Number(), comment.GetParentID(),
 		)
 	if err != nil {
