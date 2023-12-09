@@ -165,11 +165,11 @@ func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Co
 	return response.Comments, nil
 }
 
-func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32) ([]*pb.Comment, error) {
+func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32, quantity int32) ([]*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	requests := &pb.ExpandCommentBranchRequest{CommentID: CommentID}
+	requests := &pb.ExpandCommentBranchRequest{CommentID: CommentID, Quantity: quantity}
 	log.Print(color.YellowString("[ExpandCommentBranch] Sending: %v", requests))
 
 	response, err := s._client.ExpandCommentBranch(ctx, requests)
@@ -210,7 +210,7 @@ func (s *RedditAPIClient) runGetTopComments() {
 }
 
 func (s *RedditAPIClient) runExpandCommentBranch() {
-	s.ExpandCommentBranch(1)
+	s.ExpandCommentBranch(1, 10)
 }
 
 func (s *RedditAPIClient) runMonitorUpdates() {

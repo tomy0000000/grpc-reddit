@@ -141,7 +141,7 @@ func (s *gRPCserver) ExpandCommentBranch(ctx context.Context, in *pb.ExpandComme
 	log.Print(color.YellowString("[ExpandCommentBranch] Received: %v", in))
 
 	// Get the comments from the database
-	comments, err := s.sqlClient.ExpandCommentBranch(int(in.GetCommentID()))
+	comments, err := s.sqlClient.ExpandCommentBranch(int(in.GetCommentID()), int(in.GetQuantity()))
 	if err != nil {
 		log.Fatal(color.RedString("[ExpandCommentBranch] DB error: %v", err))
 	}

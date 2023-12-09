@@ -107,6 +107,7 @@ message Comment {
   google.type.Date publicationDate = 6;
   ContentType parent = 7; // Parent should never be unspecified
   int32 parentID = 8;
+  repeated Comment children = 9;
 }
 
 
@@ -193,6 +194,7 @@ message GetTopCommentsResponse {
 // The request message for expanding a comment branch
 message ExpandCommentBranchRequest {
   int32 commentID = 1;
+  int32 quantity = 2;
 }
 
 // The response message for expanding a comment branch

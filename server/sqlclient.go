@@ -148,11 +148,11 @@ func (c *SQLClient) GetTopComments(postID int, quantity int) ([]*pb.Comment, err
 	return comments, nil
 }
 
-func (c *SQLClient) ExpandCommentBranch(id int) ([]*pb.Comment, error) {
+func (c *SQLClient) ExpandCommentBranch(id int, quantity int) ([]*pb.Comment, error) {
 	// Get the comment from the database
 	rows, err := c.db.Query(
-		"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC",
-		pb.ContentType_COMMENT, id)
+		"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC LIMIT (?)",
+		pb.ContentType_COMMENT, id, quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +169,31 @@ func (c *SQLClient) ExpandCommentBranch(id int) ([]*pb.Comment, error) {
 			return nil, err
 		}
 		comments = append(comments, comment)
+	}
+
+	for _, comment := range comments {
+		// Get the replies of the comment
+		rows, err := c.db.Query(
+			"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC LIMIT (?)",
+			pb.ContentType_COMMENT, comment.Id, quantity)
+		if err != nil {
+			return nil, err
+		}
+		replies := []*pb.Comment{}
+
+		for rows.Next() {
+			reply := &pb.Comment{
+				Author: &pb.User{},
+			}
+			if err := rows.Scan(
+				&reply.Id, &reply.Content, &reply.Author.Id, &reply.Score,
+				&reply.State, &reply.PublicationDate, &reply.Parent, &reply.ParentID,
+			); err != nil {
+				return nil, err
+			}
+			replies = append(replies, reply)
+		}
+		comment.Children = replies
 	}
 
 	return comments, nil
