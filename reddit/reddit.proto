@@ -32,8 +32,8 @@ service Reddit {
   // Expand a comment branch
   rpc ExpandCommentBranch (ExpandCommentBranchRequest) returns (ExpandCommentBranchResponse) {}
 
-  // Monitor updates
-  rpc MonitorUpdates (MonitorUpdatesRequest) returns (stream MonitorUpdatesResponse) {}
+  // Monitor updates to posts and comments
+  rpc MonitorUpdates (stream MonitorUpdatesRequest) returns (stream MonitorUpdatesResponse) {}
 }
 
 
@@ -62,8 +62,8 @@ enum CommentState {
   LOCKED_COMMENT = 2;
 }
 
-enum CommentParent {
-  COMMENTPARENT_UNSPECIFIED = 0;
+enum ContentType {
+  CONTENTTYPE_UNSPECIFIED = 0;
   POST = 1;
   COMMENT = 2;
 }
@@ -105,7 +105,7 @@ message Comment {
   int32 score = 4;
   CommentState state = 5; // State should never be unspecified
   google.type.Date publicationDate = 6;
-  CommentParent parent = 7; // Parent should never be unspecified
+  ContentType parent = 7; // Parent should never be unspecified
   int32 parentID = 8;
 }
 
@@ -202,11 +202,13 @@ message ExpandCommentBranchResponse {
 
 // The request message for monitoring updates
 message MonitorUpdatesRequest {
-  int32 userID = 1;
+  ContentType contentType = 1;
+  int32 contentID = 2;
 }
 
 // The response message for monitoring updates
 message MonitorUpdatesResponse {
-  repeated Post posts = 1;
-  repeated Comment comments = 2;
+  ContentType contentType = 1;
+  int32 contentID = 2;
+  int32 score = 3;
 }

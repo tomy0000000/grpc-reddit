@@ -38,8 +38,8 @@ type RedditClient interface {
 	GetTopComments(ctx context.Context, in *GetTopCommentsRequest, opts ...grpc.CallOption) (*GetTopCommentsResponse, error)
 	// Expand a comment branch
 	ExpandCommentBranch(ctx context.Context, in *ExpandCommentBranchRequest, opts ...grpc.CallOption) (*ExpandCommentBranchResponse, error)
-	// Monitor updates
-	MonitorUpdates(ctx context.Context, in *MonitorUpdatesRequest, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error)
+	// Monitor updates to posts and comments
+	MonitorUpdates(ctx context.Context, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error)
 }
 
 type redditClient struct {
@@ -122,28 +122,27 @@ func (c *redditClient) ExpandCommentBranch(ctx context.Context, in *ExpandCommen
 	return out, nil
 }
 
-func (c *redditClient) MonitorUpdates(ctx context.Context, in *MonitorUpdatesRequest, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error) {
+func (c *redditClient) MonitorUpdates(ctx context.Context, opts ...grpc.CallOption) (Reddit_MonitorUpdatesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Reddit_ServiceDesc.Streams[0], "/reddit.Reddit/MonitorUpdates", opts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &redditMonitorUpdatesClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
 	return x, nil
 }
 
 type Reddit_MonitorUpdatesClient interface {
+	Send(*MonitorUpdatesRequest) error
 	Recv() (*MonitorUpdatesResponse, error)
 	grpc.ClientStream
 }
 
 type redditMonitorUpdatesClient struct {
 	grpc.ClientStream
+}
+
+func (x *redditMonitorUpdatesClient) Send(m *MonitorUpdatesRequest) error {
+	return x.ClientStream.SendMsg(m)
 }
 
 func (x *redditMonitorUpdatesClient) Recv() (*MonitorUpdatesResponse, error) {
@@ -174,8 +173,8 @@ type RedditServer interface {
 	GetTopComments(context.Context, *GetTopCommentsRequest) (*GetTopCommentsResponse, error)
 	// Expand a comment branch
 	ExpandCommentBranch(context.Context, *ExpandCommentBranchRequest) (*ExpandCommentBranchResponse, error)
-	// Monitor updates
-	MonitorUpdates(*MonitorUpdatesRequest, Reddit_MonitorUpdatesServer) error
+	// Monitor updates to posts and comments
+	MonitorUpdates(Reddit_MonitorUpdatesServer) error
 	mustEmbedUnimplementedRedditServer()
 }
 
@@ -207,7 +206,7 @@ func (UnimplementedRedditServer) GetTopComments(context.Context, *GetTopComments
 func (UnimplementedRedditServer) ExpandCommentBranch(context.Context, *ExpandCommentBranchRequest) (*ExpandCommentBranchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExpandCommentBranch not implemented")
 }
-func (UnimplementedRedditServer) MonitorUpdates(*MonitorUpdatesRequest, Reddit_MonitorUpdatesServer) error {
+func (UnimplementedRedditServer) MonitorUpdates(Reddit_MonitorUpdatesServer) error {
 	return status.Errorf(codes.Unimplemented, "method MonitorUpdates not implemented")
 }
 func (UnimplementedRedditServer) mustEmbedUnimplementedRedditServer() {}
@@ -368,15 +367,12 @@ func _Reddit_ExpandCommentBranch_Handler(srv interface{}, ctx context.Context, d
 }
 
 func _Reddit_MonitorUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(MonitorUpdatesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(RedditServer).MonitorUpdates(m, &redditMonitorUpdatesServer{stream})
+	return srv.(RedditServer).MonitorUpdates(&redditMonitorUpdatesServer{stream})
 }
 
 type Reddit_MonitorUpdatesServer interface {
 	Send(*MonitorUpdatesResponse) error
+	Recv() (*MonitorUpdatesRequest, error)
 	grpc.ServerStream
 }
 
@@ -386,6 +382,14 @@ type redditMonitorUpdatesServer struct {
 
 func (x *redditMonitorUpdatesServer) Send(m *MonitorUpdatesResponse) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func (x *redditMonitorUpdatesServer) Recv() (*MonitorUpdatesRequest, error) {
+	m := new(MonitorUpdatesRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Reddit_ServiceDesc is the grpc.ServiceDesc for Reddit service.
@@ -433,6 +437,7 @@ var Reddit_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "MonitorUpdates",
 			Handler:       _Reddit_MonitorUpdates_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "reddit/reddit.proto",

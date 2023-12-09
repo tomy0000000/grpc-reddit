@@ -126,7 +126,7 @@ func (c *SQLClient) GetTopComments(postID int, quantity int) ([]*pb.Comment, err
 	// Get the comment from the database
 	rows, err := c.db.Query(
 		"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC LIMIT (?)",
-		pb.CommentParent_POST, postID, quantity)
+		pb.ContentType_POST, postID, quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (c *SQLClient) ExpandCommentBranch(id int) ([]*pb.Comment, error) {
 	// Get the comment from the database
 	rows, err := c.db.Query(
 		"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC",
-		pb.CommentParent_COMMENT, id)
+		pb.ContentType_COMMENT, id)
 	if err != nil {
 		return nil, err
 	}
