@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -31,9 +32,9 @@ type RedditAPIClient struct {
 	_conn   *grpc.ClientConn
 }
 
-func NewRedditAPIClient(addr string) *RedditAPIClient {
+func NewRedditAPIClient(addr string, port int) *RedditAPIClient {
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", addr, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(color.RedString("did not connect: %v", err))
 	}

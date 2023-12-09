@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	addr = flag.String("addr", "localhost", "the address to connect to")
+	port = flag.Int("port", 50051, "The server port")
 )
 
 func demoFunc(s RedditAPI) (string, error) {
@@ -45,7 +46,7 @@ func demoFunc(s RedditAPI) (string, error) {
 
 func main() {
 	flag.Parse()
-	s := NewRedditAPIClient(*addr)
+	s := NewRedditAPIClient(*addr, *port)
 
 	log.Print(color.BlueString("[Demo] Start!"))
 	result, err := demoFunc(s)
