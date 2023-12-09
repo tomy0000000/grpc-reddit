@@ -37,16 +37,16 @@ func (s *RedditAPIClient) close() {
 	s._conn.Close()
 }
 
-func (s *RedditAPIClient) runCreatePost() {
+func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID int32, authorID int32) (*pb.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
 	request := &pb.CreatePostRequest{
 		Post: &pb.Post{
-			Title:     "Hello",
-			Content:   "World",
-			SubReddit: &pb.SubReddit{Id: 1},
-			Author:    &pb.User{Id: 1},
+			Title:     title,
+			Content:   content,
+			SubReddit: &pb.SubReddit{Id: subRedditID},
+			Author:    &pb.User{Id: authorID},
 		},
 	}
 	log.Print(color.YellowString("[CreatePost] Sending: %v", request))
@@ -54,48 +54,66 @@ func (s *RedditAPIClient) runCreatePost() {
 	response, err := s._client.CreatePost(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[CreatePost] Error: %v", err))
+		return nil, err
 	}
 
 	log.Print(color.GreenString("[CreatePost] Received: %v", response))
+	return response.Post, nil
 }
 
-func (s *RedditAPIClient) runVotePost() {
+func (s *RedditAPIClient) runCreatePost() {
+	s.CreatePost("Hello", "World", 1, 1)
+}
+
+func (s *RedditAPIClient) VotePost(PostID int32, Upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.VotePostRequest{PostID: int32(1), Upvote: true}
+	request := &pb.VotePostRequest{PostID: PostID, Upvote: Upvote}
 	log.Print(color.YellowString("[VotePost] Sending: %v", request))
 
 	response, err := s._client.VotePost(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[VotePost] Error: %v", err))
+		return -1, err
 	}
 
 	log.Print(color.GreenString("[VotePost] Received: %v", response))
+	return response.Score, nil
 }
 
-func (s *RedditAPIClient) runGetPost() {
+func (s *RedditAPIClient) runVotePost() {
+	s.VotePost(1, true)
+}
+
+func (s *RedditAPIClient) GetPost(PostID int32) (*pb.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.GetPostRequest{PostID: int32(1)}
+	request := &pb.GetPostRequest{PostID: PostID}
 	log.Print(color.YellowString("[GetPost] Sending: %v", request))
 
 	response, err := s._client.GetPost(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[GetPost] Error: %v", err))
+		return nil, err
 	}
 	log.Print(color.GreenString("[GetPost] Received: %v", response))
+	return response.Post, nil
 }
 
-func (s *RedditAPIClient) runCreateComment() {
+func (s *RedditAPIClient) runGetPost() {
+	s.GetPost(1)
+}
+
+func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
 	request := &pb.CreateCommentRequest{
 		Comment: &pb.Comment{
-			Content: "Hello",
-			Author:  &pb.User{Id: 1},
+			Content: content,
+			Author:  &pb.User{Id: authorID},
 		},
 	}
 	log.Print(color.YellowString("[CreateComment] Sending: %v", request))
@@ -103,64 +121,94 @@ func (s *RedditAPIClient) runCreateComment() {
 	response, err := s._client.CreateComment(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[CreateComment] Error: %v", err))
+		return nil, err
 	}
 	log.Print(color.GreenString("[CreateComment] Received: %v", response))
+	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) runVoteComment() {
+func (s *RedditAPIClient) runCreateComment() {
+	s.CreateComment(1, "Hello World")
+}
+
+func (s *RedditAPIClient) VoteComment(CommentID int32, Upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.VoteCommentRequest{CommentID: int32(1), Upvote: true}
+	request := &pb.VoteCommentRequest{CommentID: CommentID, Upvote: Upvote}
 	log.Print(color.YellowString("[VoteComment] Sending: %v", request))
 
 	response, err := s._client.VoteComment(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[VoteComment] Error: %v", err))
+		return -1, err
 	}
 	log.Print(color.GreenString("[VoteComment] Received: %v", response))
+	return response.Score, nil
 }
 
-func (s *RedditAPIClient) runGetComment() {
+func (s *RedditAPIClient) runVoteComment() {
+	s.VoteComment(1, true)
+}
+
+func (s *RedditAPIClient) GetComment(CommentID int32) (*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.GetCommentRequest{CommentID: int32(1)}
+	request := &pb.GetCommentRequest{CommentID: CommentID}
 	log.Print(color.YellowString("[GetComment] Sending: %v", request))
 
 	response, err := s._client.GetComment(ctx, request)
 	if err != nil {
 		log.Fatal(color.RedString("[GetComment] Error: %v", err))
+		return nil, err
 	}
 	log.Print(color.GreenString("[GetComment] Received: %v", response))
+	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) runGetTopComments() {
+func (s *RedditAPIClient) runGetComment() {
+	s.GetComment(1)
+}
+
+func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	requests := &pb.GetTopCommentsRequest{PostID: int32(2), Quantity: int32(10)}
+	requests := &pb.GetTopCommentsRequest{PostID: PostID, Quantity: Quantity}
 	log.Print(color.YellowString("[GetTopComments] Sending: %v", requests))
 
 	response, err := s._client.GetTopComments(ctx, requests)
 	if err != nil {
 		log.Fatal(color.RedString("[GetTopComments] Error: %v", err))
+		return nil, err
 	}
 	log.Print(color.GreenString("[GetTopComments] Received: %v", response))
+	return response.Comments, nil
 }
 
-func (s *RedditAPIClient) runExpandCommentBranch() {
+func (s *RedditAPIClient) runGetTopComments() {
+	s.GetTopComments(2, 10)
+}
+
+func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32) ([]*pb.Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	requests := &pb.ExpandCommentBranchRequest{CommentID: int32(1)}
+	requests := &pb.ExpandCommentBranchRequest{CommentID: CommentID}
 	log.Print(color.YellowString("[ExpandCommentBranch] Sending: %v", requests))
 
 	response, err := s._client.ExpandCommentBranch(ctx, requests)
 	if err != nil {
 		log.Fatal(color.RedString("[ExpandCommentBranch] Error: %v", err))
+		return nil, err
 	}
 	log.Print(color.GreenString("[ExpandCommentBranch] Received: %v", response))
+	return response.Comments, nil
+}
+
+func (s *RedditAPIClient) runExpandCommentBranch() {
+	s.ExpandCommentBranch(1)
 }
 
 func (s *RedditAPIClient) runMonitorUpdates() {
