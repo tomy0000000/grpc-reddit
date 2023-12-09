@@ -135,6 +135,20 @@ func (s *gRPCserver) GetTopComments(ctx context.Context, in *pb.GetTopCommentsRe
 	return response, nil
 }
 
+func (s *gRPCserver) ExpandCommentBranch(ctx context.Context, in *pb.ExpandCommentBranchRequest) (*pb.ExpandCommentBranchResponse, error) {
+	log.Print(color.YellowString("[ExpandCommentBranch] Received: %v", in))
+
+	// Get the comments from the database
+	comments, err := s.sqlClient.ExpandCommentBranch(int(in.GetCommentID()))
+	if err != nil {
+		log.Fatal(color.RedString("[ExpandCommentBranch] DB error: %v", err))
+	}
+
+	response := &pb.ExpandCommentBranchResponse{Comments: comments}
+	log.Print(color.GreenString("[ExpandCommentBranch] Reponse: %v", response))
+	return response, nil
+}
+
 func main() {
 	// Parse the flags
 	flag.Parse()

@@ -132,6 +132,20 @@ func runGetTopComments(c pb.RedditClient) {
 	log.Print(color.GreenString("[GetTopComments] Received: %v", response))
 }
 
+func runExpandCommentBranch(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	requests := &pb.ExpandCommentBranchRequest{CommentID: int32(1)}
+	log.Print(color.YellowString("[ExpandCommentBranch] Sending: %v", requests))
+
+	response, err := c.ExpandCommentBranch(ctx, requests)
+	if err != nil {
+		log.Fatal(color.RedString("[ExpandCommentBranch] Error: %v", err))
+	}
+	log.Print(color.GreenString("[ExpandCommentBranch] Received: %v", response))
+}
+
 func main() {
 	flag.Parse()
 	// Set up a connection to the server.
@@ -149,4 +163,5 @@ func main() {
 	runVoteComment(c)
 	runGetComment(c)
 	runGetTopComments(c)
+	runExpandCommentBranch(c)
 }

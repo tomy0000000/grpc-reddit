@@ -148,3 +148,28 @@ func (c *SQLClient) GetTopComments(postID int, quantity int) ([]*pb.Comment, err
 	return comments, nil
 }
 
+func (c *SQLClient) ExpandCommentBranch(id int) ([]*pb.Comment, error) {
+	// Get the comment from the database
+	rows, err := c.db.Query(
+		"SELECT * from comment WHERE (parent = (?) AND parentID = (?)) ORDER BY score DESC",
+		pb.CommentParent_COMMENT, id)
+	if err != nil {
+		return nil, err
+	}
+	comments := []*pb.Comment{}
+
+	for rows.Next() {
+		comment := &pb.Comment{
+			Author: &pb.User{},
+		}
+		if err := rows.Scan(
+			&comment.Id, &comment.Content, &comment.Author.Id, &comment.Score,
+			&comment.State, &comment.PublicationDate, &comment.Parent, &comment.ParentID,
+		); err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
+}
