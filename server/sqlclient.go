@@ -94,6 +94,21 @@ func (c *SQLClient) CreateComment(comment *pb.Comment) (int, error) {
 	return int(id), nil
 }
 
+func (c *SQLClient) VoteComment(id int, upvote bool) (int, error) {
+	// Increment/Decrement the score of the comment
+	_, err := c.db.Exec("UPDATE comment SET score = score + (?) WHERE id = (?)", upvote, id)
+	if err != nil {
+		return -1, err
+	}
+	// Get the new score
+	row := c.db.QueryRow("SELECT score FROM comment WHERE id = (?)", id)
+	var newScore int
+	if err := row.Scan(&newScore); err != nil {
+		return -1, err
+	}
+	return newScore, nil
+}
+
 func (c *SQLClient) GetComment(id int) (*pb.Comment, error) {
 	// Get the comment from the database
 	row := c.db.QueryRow("SELECT * from comment WHERE id = (?)", id)

@@ -92,6 +92,20 @@ func (s *gRPCserver) CreateComment(ctx context.Context, in *pb.CreateCommentRequ
 	return response, nil
 }
 
+func (s *gRPCserver) VoteComment(ctx context.Context, in *pb.VoteCommentRequest) (*pb.VoteCommentResponse, error) {
+	log.Print(color.YellowString("[VoteComment] Received: %v", in))
+
+	// Increment/Decrement the score of the post
+	newScore, err := s.sqlClient.VoteComment(int(in.GetCommentID()), in.GetUpvote())
+	if err != nil {
+		log.Fatal(color.RedString("[VoteComment] DB error: %v", err))
+	}
+
+	response := &pb.VoteCommentResponse{Score: int32(newScore)}
+	log.Print(color.GreenString("[VoteComment] Reponse: %v", response))
+	return response, nil
+}
+
 func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (*pb.GetCommentResponse, error) {
 	log.Print(color.YellowString("[GetComment] Received: %v", in))
 	id := in.GetCommentID()
