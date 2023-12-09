@@ -25,6 +25,7 @@ type gRPCserver struct {
 	sqlClient *SQLClient
 }
 
+// Create a post
 func (s *gRPCserver) CreatePost(ctx context.Context, in *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
 	log.Print(color.YellowString("[CreatePost] Received: %v", in))
 
@@ -45,6 +46,7 @@ func (s *gRPCserver) CreatePost(ctx context.Context, in *pb.CreatePostRequest) (
 	return response, nil
 }
 
+// Upvote or downvote a Post
 func (s *gRPCserver) VotePost(ctx context.Context, in *pb.VotePostRequest) (*pb.VotePostResponse, error) {
 	log.Print(color.YellowString("[VotePost] Received: %v", in))
 
@@ -59,6 +61,7 @@ func (s *gRPCserver) VotePost(ctx context.Context, in *pb.VotePostRequest) (*pb.
 	return response, nil
 }
 
+// Retrieve Post content
 func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.GetPostResponse, error) {
 	log.Print(color.YellowString("[GetPost] Received: %v", in))
 	id := in.GetPostID()
@@ -74,6 +77,7 @@ func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.Ge
 	return response, nil
 }
 
+// Create a Comment
 func (s *gRPCserver) CreateComment(ctx context.Context, in *pb.CreateCommentRequest) (*pb.CreateCommentResponse, error) {
 	log.Print(color.YellowString("[CreateComment] Received: %v", in))
 
@@ -94,6 +98,7 @@ func (s *gRPCserver) CreateComment(ctx context.Context, in *pb.CreateCommentRequ
 	return response, nil
 }
 
+// Upvote or downvote a Comment
 func (s *gRPCserver) VoteComment(ctx context.Context, in *pb.VoteCommentRequest) (*pb.VoteCommentResponse, error) {
 	log.Print(color.YellowString("[VoteComment] Received: %v", in))
 
@@ -108,6 +113,7 @@ func (s *gRPCserver) VoteComment(ctx context.Context, in *pb.VoteCommentRequest)
 	return response, nil
 }
 
+// Retrieve a Comment
 func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (*pb.GetCommentResponse, error) {
 	log.Print(color.YellowString("[GetComment] Received: %v", in))
 	id := in.GetCommentID()
@@ -123,6 +129,7 @@ func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (
 	return response, nil
 }
 
+// Retrieving a list of N most upvoted comments under a post
 func (s *gRPCserver) GetTopComments(ctx context.Context, in *pb.GetTopCommentsRequest) (*pb.GetTopCommentsResponse, error) {
 	log.Print(color.YellowString("[GetTopComments] Received: %v", in))
 
@@ -137,6 +144,7 @@ func (s *gRPCserver) GetTopComments(ctx context.Context, in *pb.GetTopCommentsRe
 	return response, nil
 }
 
+// Expand a comment branch
 func (s *gRPCserver) ExpandCommentBranch(ctx context.Context, in *pb.ExpandCommentBranchRequest) (*pb.ExpandCommentBranchResponse, error) {
 	log.Print(color.YellowString("[ExpandCommentBranch] Received: %v", in))
 
@@ -151,6 +159,7 @@ func (s *gRPCserver) ExpandCommentBranch(ctx context.Context, in *pb.ExpandComme
 	return response, nil
 }
 
+// Monitor updates to posts and comments
 func (s *gRPCserver) MonitorUpdates(stream pb.Reddit_MonitorUpdatesServer) error {
 	monitorPostList := []int{}
 	monitorCommentList := []int{}

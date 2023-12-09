@@ -12,6 +12,7 @@ var (
 	port = flag.Int("port", 50051, "The server port")
 )
 
+// High-level function that calls the Reddit API
 func demoFunc(s RedditAPI) (string, error) {
 	// Retrieve the post
 	post, err := s.GetPost(1)
@@ -45,9 +46,11 @@ func demoFunc(s RedditAPI) (string, error) {
 }
 
 func main() {
+	// Parse command line arguments
 	flag.Parse()
 	s := NewRedditAPIClient(*addr, *port)
 
+	// Run the high-level function demoFunc
 	log.Print(color.BlueString("[Demo] Start!"))
 	result, err := demoFunc(s)
 	if err != nil {
@@ -56,6 +59,7 @@ func main() {
 	log.Print(color.BlueString("[Demo] Result: %v", result))
 	log.Print(color.BlueString("[Demo] Done!"))
 
+	// Run individual demo functions
 	s.runCreatePost()
 	s.runVotePost()
 	s.runGetPost()
@@ -66,5 +70,6 @@ func main() {
 	s.runExpandCommentBranch()
 	s.runMonitorUpdates()
 
+	// Close the connection
 	s.close()
 }

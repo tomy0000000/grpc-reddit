@@ -21,17 +21,20 @@ type RedditSubReddit = pb.SubReddit
 type RedditPost = pb.Post
 type RedditComment = pb.Comment
 
+// Interface for the Reddit API
 type RedditAPI interface {
 	GetPost(PostID int32) (*RedditPost, error)
 	GetTopComments(PostID int32, Quantity int32) ([]*RedditComment, error)
 	ExpandCommentBranch(commentId int32, Quantity int32) ([]*RedditComment, error)
 }
 
+// Implementation of the wrapper client
 type RedditAPIClient struct {
 	_client pb.RedditClient
 	_conn   *grpc.ClientConn
 }
 
+// Constructor
 func NewRedditAPIClient(addr string, port int) *RedditAPIClient {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", addr, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -45,10 +48,18 @@ func NewRedditAPIClient(addr string, port int) *RedditAPIClient {
 	}
 }
 
+// Destructor
 func (s *RedditAPIClient) close() {
 	s._conn.Close()
 }
 
+/**
+ *
+ * Wrapper functions for the Reddit API
+ *
+ */
+
+// Create a post
 func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID int32, authorID int32) (*RedditPost, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -73,6 +84,7 @@ func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID i
 	return response.Post, nil
 }
 
+// Upvote or downvote a Post
 func (s *RedditAPIClient) VotePost(postID int32, upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -90,6 +102,7 @@ func (s *RedditAPIClient) VotePost(postID int32, upvote bool) (int32, error) {
 	return response.Score, nil
 }
 
+// Retrieve Post content
 func (s *RedditAPIClient) GetPost(postID int32) (*RedditPost, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -106,6 +119,7 @@ func (s *RedditAPIClient) GetPost(postID int32) (*RedditPost, error) {
 	return response.Post, nil
 }
 
+// Create a Comment
 func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -129,6 +143,7 @@ func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*Reddit
 	return response.Comment, nil
 }
 
+// Upvote or downvote a Comment
 func (s *RedditAPIClient) VoteComment(commentID int32, upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -145,6 +160,7 @@ func (s *RedditAPIClient) VoteComment(commentID int32, upvote bool) (int32, erro
 	return response.Score, nil
 }
 
+// Retrieve a Comment
 func (s *RedditAPIClient) GetComment(commentID int32) (*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -161,6 +177,7 @@ func (s *RedditAPIClient) GetComment(commentID int32) (*RedditComment, error) {
 	return response.Comment, nil
 }
 
+// Retrieving a list of N most upvoted comments under a post
 func (s *RedditAPIClient) GetTopComments(postID int32, quantity int32) ([]*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -177,6 +194,7 @@ func (s *RedditAPIClient) GetTopComments(postID int32, quantity int32) ([]*Reddi
 	return response.Comments, nil
 }
 
+// Expand a comment branch
 func (s *RedditAPIClient) ExpandCommentBranch(commentID int32, quantity int32) ([]*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -193,9 +211,16 @@ func (s *RedditAPIClient) ExpandCommentBranch(commentID int32, quantity int32) (
 	return response.Comments, nil
 }
 
+// Monitor updates to posts and comments
 func (s *RedditAPIClient) runCreatePost() {
 	s.CreatePost("Hello", "World", 1, 1)
 }
+
+/**
+ *
+ * Individual demo functions
+ *
+ */
 
 func (s *RedditAPIClient) runVotePost() {
 	s.VotePost(1, true)
