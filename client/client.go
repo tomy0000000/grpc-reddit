@@ -30,6 +30,16 @@ func runCreatePost(c pb.RedditClient) {
 	log.Printf("Post Created: %v", r.GetPost())
 }
 
+func runVotePost(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+	r, err := c.VotePost(ctx, &pb.VotePostRequest{PostID: int32(1), Upvote: true})
+	if err != nil {
+		log.Fatalf("could not vote post: %v", err)
+	}
+	log.Printf("Post Voted: %v", r.GetScore())
+}
+
 func runGetPost(c pb.RedditClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -51,5 +61,6 @@ func main() {
 	c := pb.NewRedditClient(conn)
 
 	runCreatePost(c)
+	runVotePost(c)
 	runGetPost(c)
 }

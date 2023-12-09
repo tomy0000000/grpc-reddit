@@ -44,6 +44,21 @@ func (c *SQLClient) CreatePost(post *pb.Post) (int, error) {
 	return int(id), nil
 }
 
+func (c *SQLClient) VotePost(id int, upvote bool) (int, error) {
+	// Increment/Decrement the score of the post
+	_, err := c.db.Exec("UPDATE post SET score = score + (?) WHERE id = (?)", upvote, id)
+	if err != nil {
+		return -1, err
+	}
+	// Get the new score
+	row := c.db.QueryRow("SELECT score FROM post WHERE id = (?)", id)
+	var newScore int
+	if err := row.Scan(&newScore); err != nil {
+		return -1, err
+	}
+	return newScore, nil
+}
+
 func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 	// Get the post from the database
 	row := c.db.QueryRow("SELECT * from post WHERE id = (?)", id)

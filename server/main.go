@@ -43,6 +43,19 @@ func (s *gRPCserver) CreatePost(ctx context.Context, in *pb.CreatePostRequest) (
 	return &pb.CreatePostResponse{Post: post}, nil
 }
 
+func (s *gRPCserver) VotePost(ctx context.Context, in *pb.VotePostRequest) (*pb.VotePostResponse, error) {
+	log.Printf("VotePost: %v", in)
+	id := in.GetPostID()
+	upvote := in.GetUpvote()
+
+	// Increment/Decrement the score of the post
+	newScore, err := s.sqlClient.VotePost(int(id), upvote)
+	if err != nil {
+		log.Fatalf("Error voting post in database: %v", err)
+	}
+	return &pb.VotePostResponse{Score: int32(newScore)}, nil
+}
+
 func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.GetPostResponse, error) {
 	log.Printf("GetPost: %v", in)
 	id := in.GetPostID()
