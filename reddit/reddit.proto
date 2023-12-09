@@ -23,6 +23,9 @@ service Reddit {
   // Upvote or downvote a Comment
   rpc VoteComment (VoteCommentRequest) returns (VoteCommentResponse) {}
 
+  // Retrieve a Comment
+  rpc GetComment (GetCommentRequest) returns (GetCommentResponse) {}
+
   // Retrieving a list of N most upvoted comments under a post
   rpc GetTopComments (GetTopCommentsRequest) returns (GetTopCommentsResponse) {}
 
@@ -158,6 +161,16 @@ message VoteCommentRequest {
 // The response message for upvoting or downvoting a comment
 message VoteCommentResponse {
   int32 score = 1;
+}
+
+// The request message for retrieving a comment
+message GetCommentRequest {
+  int32 commentID = 1;
+}
+
+// The response message for retrieving a comment
+message GetCommentResponse {
+  Comment comment = 1;
 }
 
 // The request message for retrieving a list of N most upvoted comments under a post

@@ -9,9 +9,8 @@ import (
 
 	"github.com/fatih/color"
 	_ "github.com/mattn/go-sqlite3"
-	"google.golang.org/grpc"
-
 	pb "github.com/tomy0000000/grpc-reddit/reddit/reddit"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -70,6 +69,21 @@ func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.Ge
 
 	response := &pb.GetPostResponse{Post: post}
 	log.Print(color.GreenString("[GetPost] Reponse: %v", response))
+	return response, nil
+}
+
+func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (*pb.GetCommentResponse, error) {
+	log.Print(color.YellowString("[GetComment] Received: %v", in))
+	id := in.GetCommentID()
+
+	// Get the comment from the database
+	comment, err := s.sqlClient.GetComment(int(id))
+	if err != nil {
+		log.Fatal(color.RedString("[GetComment] DB error: %v", err))
+	}
+
+	response := &pb.GetCommentResponse{Comment: comment}
+	log.Print(color.GreenString("[GetComment] Reponse: %v", response))
 	return response, nil
 }
 

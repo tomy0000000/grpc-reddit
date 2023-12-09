@@ -71,6 +71,20 @@ func runGetPost(c pb.RedditClient) {
 	log.Print(color.GreenString("[GetPost] Received: %v", response))
 }
 
+func runGetComment(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	request := &pb.GetCommentRequest{CommentID: int32(1)}
+	log.Print(color.YellowString("[GetComment] Sending: %v", request))
+
+	response, err := c.GetComment(ctx, request)
+	if err != nil {
+		log.Fatal(color.RedString("[GetComment] Error: %v", err))
+	}
+	log.Print(color.GreenString("[GetComment] Received: %v", response))
+}
+
 func main() {
 	flag.Parse()
 	// Set up a connection to the server.
@@ -84,4 +98,5 @@ func main() {
 	runCreatePost(c)
 	runVotePost(c)
 	runGetPost(c)
+	runGetComment(c)
 }

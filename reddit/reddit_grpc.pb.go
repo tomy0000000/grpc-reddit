@@ -32,6 +32,8 @@ type RedditClient interface {
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error)
 	// Upvote or downvote a Comment
 	VoteComment(ctx context.Context, in *VoteCommentRequest, opts ...grpc.CallOption) (*VoteCommentResponse, error)
+	// Retrieve a Comment
+	GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*GetCommentResponse, error)
 	// Retrieving a list of N most upvoted comments under a post
 	GetTopComments(ctx context.Context, in *GetTopCommentsRequest, opts ...grpc.CallOption) (*GetTopCommentsResponse, error)
 	// Expand a comment branch
@@ -87,6 +89,15 @@ func (c *redditClient) CreateComment(ctx context.Context, in *CreateCommentReque
 func (c *redditClient) VoteComment(ctx context.Context, in *VoteCommentRequest, opts ...grpc.CallOption) (*VoteCommentResponse, error) {
 	out := new(VoteCommentResponse)
 	err := c.cc.Invoke(ctx, "/reddit.Reddit/VoteComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redditClient) GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*GetCommentResponse, error) {
+	out := new(GetCommentResponse)
+	err := c.cc.Invoke(ctx, "/reddit.Reddit/GetComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +168,8 @@ type RedditServer interface {
 	CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error)
 	// Upvote or downvote a Comment
 	VoteComment(context.Context, *VoteCommentRequest) (*VoteCommentResponse, error)
+	// Retrieve a Comment
+	GetComment(context.Context, *GetCommentRequest) (*GetCommentResponse, error)
 	// Retrieving a list of N most upvoted comments under a post
 	GetTopComments(context.Context, *GetTopCommentsRequest) (*GetTopCommentsResponse, error)
 	// Expand a comment branch
@@ -184,6 +197,9 @@ func (UnimplementedRedditServer) CreateComment(context.Context, *CreateCommentRe
 }
 func (UnimplementedRedditServer) VoteComment(context.Context, *VoteCommentRequest) (*VoteCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VoteComment not implemented")
+}
+func (UnimplementedRedditServer) GetComment(context.Context, *GetCommentRequest) (*GetCommentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetComment not implemented")
 }
 func (UnimplementedRedditServer) GetTopComments(context.Context, *GetTopCommentsRequest) (*GetTopCommentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopComments not implemented")
@@ -297,6 +313,24 @@ func _Reddit_VoteComment_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Reddit_GetComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedditServer).GetComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reddit.Reddit/GetComment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedditServer).GetComment(ctx, req.(*GetCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Reddit_GetTopComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetTopCommentsRequest)
 	if err := dec(in); err != nil {
@@ -380,6 +414,10 @@ var Reddit_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VoteComment",
 			Handler:    _Reddit_VoteComment_Handler,
+		},
+		{
+			MethodName: "GetComment",
+			Handler:    _Reddit_GetComment_Handler,
 		},
 		{
 			MethodName: "GetTopComments",

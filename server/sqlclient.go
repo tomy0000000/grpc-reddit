@@ -75,3 +75,18 @@ func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 	}
 	return post, nil
 }
+
+func (c *SQLClient) GetComment(id int) (*pb.Comment, error) {
+	// Get the comment from the database
+	row := c.db.QueryRow("SELECT * from comment WHERE id = (?)", id)
+	comment := &pb.Comment{
+		Author: &pb.User{},
+	}
+	if err := row.Scan(
+		&comment.Id, &comment.Content, &comment.Author.Id, &comment.Score,
+		&comment.State, &comment.PublicationDate, &comment.Comments,
+	); err == sql.ErrNoRows {
+		return nil, err
+	}
+	return comment, nil
+}
