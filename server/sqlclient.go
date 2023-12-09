@@ -78,9 +78,10 @@ func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 func (c *SQLClient) CreateComment(comment *pb.Comment) (int, error) {
 	// Insert the comment into the database
 	res, err :=
-		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate) VALUES (?, ?, ?, ?, ?)",
+		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate, parent, parentID) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			comment.GetContent(), comment.GetAuthor().GetId(),
 			comment.GetScore(), comment.GetState().Number(), time.Now(),
+			comment.GetParent().Number(), comment.GetParentID(),
 		)
 	if err != nil {
 		return -1, err

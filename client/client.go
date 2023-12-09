@@ -112,8 +112,10 @@ func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Com
 
 	request := &pb.CreateCommentRequest{
 		Comment: &pb.Comment{
-			Content: content,
-			Author:  &pb.User{Id: authorID},
+			Content:  content,
+			Author:   &pb.User{Id: authorID},
+			Parent:   pb.ContentType_POST,
+			ParentID: 1,
 		},
 	}
 	log.Print(color.YellowString("[CreateComment] Sending: %v", request))
