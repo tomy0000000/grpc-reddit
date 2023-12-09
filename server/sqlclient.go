@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"strings"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -74,6 +75,23 @@ func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 		return nil, err
 	}
 	return post, nil
+}
+
+func (c *SQLClient) CreateComment(comment *pb.Comment) (int, error) {
+	// Insert the comment into the database
+	res, err :=
+		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate, comments) VALUES (?, ?, ?, ?, ?, ?)",
+			comment.GetContent(), comment.GetAuthor().GetId(),
+			comment.GetScore(), comment.GetState().Number(), time.Now(), "",
+		)
+	if err != nil {
+		return -1, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return int(id), nil
 }
 
 func (c *SQLClient) GetComment(id int) (*pb.Comment, error) {

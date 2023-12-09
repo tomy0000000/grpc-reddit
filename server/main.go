@@ -72,6 +72,26 @@ func (s *gRPCserver) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.Ge
 	return response, nil
 }
 
+func (s *gRPCserver) CreateComment(ctx context.Context, in *pb.CreateCommentRequest) (*pb.CreateCommentResponse, error) {
+	log.Print(color.YellowString("[CreateComment] Received: %v", in))
+
+	// Insert the comment into the database
+	id, err := s.sqlClient.CreateComment(in.GetComment())
+	if err != nil {
+		log.Fatal(color.RedString("[CreateComment] DB error: %v", err))
+	}
+
+	// Get the comment from the database
+	comment, err := s.sqlClient.GetComment(id)
+	if err != nil {
+		log.Fatal(color.RedString("[CreateComment] DB error: %v", err))
+	}
+
+	response := &pb.CreateCommentResponse{Comment: comment}
+	log.Print(color.GreenString("[CreateComment] Reponse: %v", response))
+	return response, nil
+}
+
 func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (*pb.GetCommentResponse, error) {
 	log.Print(color.YellowString("[GetComment] Received: %v", in))
 	id := in.GetCommentID()

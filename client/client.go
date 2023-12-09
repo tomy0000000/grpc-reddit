@@ -71,6 +71,25 @@ func runGetPost(c pb.RedditClient) {
 	log.Print(color.GreenString("[GetPost] Received: %v", response))
 }
 
+func runCreateComment(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	request := &pb.CreateCommentRequest{
+		Comment: &pb.Comment{
+			Content: "Hello",
+			Author:  &pb.User{Id: 1},
+		},
+	}
+	log.Print(color.YellowString("[CreateComment] Sending: %v", request))
+
+	response, err := c.CreateComment(ctx, request)
+	if err != nil {
+		log.Fatal(color.RedString("[CreateComment] Error: %v", err))
+	}
+	log.Print(color.GreenString("[CreateComment] Received: %v", response))
+}
+
 func runGetComment(c pb.RedditClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
@@ -98,5 +117,6 @@ func main() {
 	runCreatePost(c)
 	runVotePost(c)
 	runGetPost(c)
+	runCreateComment(c)
 	runGetComment(c)
 }
