@@ -106,6 +106,8 @@ An example database is included as [`reddit.db`](data/reddit.db)
 * [Client](client/client.go)
 * [High level function](client/main.go) and its [test](client/client_test.go)
 
+Video demo is provided in [GitHub README](https://github.com/tomy0000000/grpc-reddit)
+
 ## Extra Credit
 
 * Data Model
