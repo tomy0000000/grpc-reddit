@@ -25,3 +25,9 @@ go run ./server
 ```shell
 go run ./client
 ```
+
+- Run tests
+
+```shell
+go test ./...
+```

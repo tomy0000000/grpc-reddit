@@ -11,7 +11,7 @@ var (
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 )
 
-func demoFunc(s *RedditAPIClient) (string, error) {
+func demoFunc(s RedditAPI) (string, error) {
 	// Retrieve the post
 	post, err := s.GetPost(1)
 	if err != nil {

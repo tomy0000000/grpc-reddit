@@ -15,6 +15,15 @@ const (
 	TIMEOUT = 1000 * time.Second
 )
 
+type RedditPost = pb.Post
+type RedditComment = pb.Comment
+
+type RedditAPI interface {
+	GetPost(PostID int32) (*RedditPost, error)
+	GetTopComments(PostID int32, Quantity int32) ([]*RedditComment, error)
+	ExpandCommentBranch(commentId int32, Quantity int32) ([]*RedditComment, error)
+}
+
 type RedditAPIClient struct {
 	_client pb.RedditClient
 	_conn   *grpc.ClientConn
