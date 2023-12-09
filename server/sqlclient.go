@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -29,11 +28,10 @@ func NewSQLClient() (*SQLClient, error) {
 func (c *SQLClient) CreatePost(post *pb.Post) (int, error) {
 	// Insert the post into the database
 	res, err :=
-		c.db.Exec("INSERT INTO post (title, content, subRedditID, videoURL, imageURL, authorID, score, state, publicationDate, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		c.db.Exec("INSERT INTO post (title, content, subRedditID, videoURL, imageURL, authorID, score, state, publicationDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			post.GetTitle(), post.GetContent(), post.GetSubReddit().GetId(),
 			post.GetVideoURL(), post.GetImageURL(), post.GetAuthor().GetId(),
-			post.GetScore(), post.GetState().Number(), post.GetPublicationDate(),
-			strings.Join(post.GetComments(), ","),
+			post.GetScore(), post.GetState().Number(), time.Now(),
 		)
 	if err != nil {
 		return -1, err
@@ -70,7 +68,7 @@ func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 	if err := row.Scan(
 		&post.Id, &post.Title, &post.Content, &post.SubReddit.Id,
 		&post.VideoURL, &post.ImageURL, &post.Author.Id, &post.Score,
-		&post.State, &post.PublicationDate, &post.Comments,
+		&post.State, &post.PublicationDate,
 	); err == sql.ErrNoRows {
 		return nil, err
 	}
@@ -80,9 +78,9 @@ func (c *SQLClient) GetPost(id int) (*pb.Post, error) {
 func (c *SQLClient) CreateComment(comment *pb.Comment) (int, error) {
 	// Insert the comment into the database
 	res, err :=
-		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate, comments) VALUES (?, ?, ?, ?, ?, ?)",
+		c.db.Exec("INSERT INTO comment (content, authorID, score, state, publicationDate) VALUES (?, ?, ?, ?, ?)",
 			comment.GetContent(), comment.GetAuthor().GetId(),
-			comment.GetScore(), comment.GetState().Number(), time.Now(), "",
+			comment.GetScore(), comment.GetState().Number(), time.Now(),
 		)
 	if err != nil {
 		return -1, err
@@ -117,7 +115,7 @@ func (c *SQLClient) GetComment(id int) (*pb.Comment, error) {
 	}
 	if err := row.Scan(
 		&comment.Id, &comment.Content, &comment.Author.Id, &comment.Score,
-		&comment.State, &comment.PublicationDate, &comment.Comments,
+		&comment.State, &comment.PublicationDate, &comment.Parent, &comment.ParentID,
 	); err == sql.ErrNoRows {
 		return nil, err
 	}
