@@ -62,6 +62,12 @@ enum CommentState {
   LOCKED_COMMENT = 2;
 }
 
+enum CommentParent {
+  COMMENTPARENT_UNSPECIFIED = 0;
+  POST = 1;
+  COMMENT = 2;
+}
+
 
 /* 
  * Data Models
@@ -90,17 +96,17 @@ message Post {
   int32 score = 8;
   PostState state = 9; // State should never be unspecified
   google.type.Date publicationDate = 10;
-  repeated string comments = 11;
 }
 
 message Comment {
   int32 id = 1;
   string content = 2;
   User author = 3;
-  int32 score = 6;
-  CommentState state = 7; // State should never be unspecified
-  google.type.Date publicationDate = 8;
-  repeated string comments = 9;
+  int32 score = 4;
+  CommentState state = 5; // State should never be unspecified
+  google.type.Date publicationDate = 6;
+  CommentParent parent = 7; // Parent should never be unspecified
+  int32 parentID = 8;
 }
 
 
