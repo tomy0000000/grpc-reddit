@@ -146,6 +146,55 @@ func runExpandCommentBranch(c pb.RedditClient) {
 	log.Print(color.GreenString("[ExpandCommentBranch] Received: %v", response))
 }
 
+func runMonitorUpdates(c pb.RedditClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	// Create a stream
+	stream, err := c.MonitorUpdates(ctx)
+	if err != nil {
+		log.Fatal(color.RedString("[MonitorUpdates] Error: %v", err))
+	}
+
+	// Routine to receive responses
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			response, err := stream.Recv()
+			if err != nil {
+				close(waitc)
+				return
+			}
+			log.Print(color.GreenString("[MonitorUpdates] Received: %v", response))
+		}
+	}()
+
+	// Send a initial monitor request
+	requests := &pb.MonitorUpdatesRequest{
+		ContentType: pb.ContentType_POST, ContentID: int32(1),
+	}
+	log.Print(color.YellowString("[MonitorUpdates] Sending: %v", requests))
+	if err := stream.Send(requests); err != nil {
+		log.Fatal(color.RedString("[MonitorUpdates] Error: %v", err))
+	}
+
+	// Wait for 10 seconds
+	time.Sleep(10 * time.Second)
+
+	// Send a second monitor request
+	requests = &pb.MonitorUpdatesRequest{
+		ContentType: pb.ContentType_COMMENT, ContentID: int32(1),
+	}
+	log.Print(color.YellowString("[MonitorUpdates] Sending: %v", requests))
+	if err := stream.Send(requests); err != nil {
+		log.Fatal(color.RedString("[MonitorUpdates] Error: %v", err))
+	}
+
+	// Close the stream after 10 seconds
+	time.Sleep(10 * time.Second)
+	stream.CloseSend()
+}
+
 func main() {
 	flag.Parse()
 	// Set up a connection to the server.
@@ -164,4 +213,5 @@ func main() {
 	runGetComment(c)
 	runGetTopComments(c)
 	runExpandCommentBranch(c)
+	runMonitorUpdates(c)
 }

@@ -4,8 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"time"
 
 	"github.com/fatih/color"
 	_ "github.com/mattn/go-sqlite3"
@@ -147,6 +149,82 @@ func (s *gRPCserver) ExpandCommentBranch(ctx context.Context, in *pb.ExpandComme
 	response := &pb.ExpandCommentBranchResponse{Comments: comments}
 	log.Print(color.GreenString("[ExpandCommentBranch] Reponse: %v", response))
 	return response, nil
+}
+
+func (s *gRPCserver) MonitorUpdates(stream pb.Reddit_MonitorUpdatesServer) error {
+	monitorPostList := []int{}
+	monitorCommentList := []int{}
+
+	// Process client requests to add content to the list of monitored contents
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Print(color.RedString("[MonitorUpdates] Error: %v", err))
+				return
+			}
+			log.Print(color.YellowString("[MonitorUpdates] Received: %v", in))
+
+			// Add the content to the list of monitored contents
+			switch in.GetContentType() {
+			case pb.ContentType_POST:
+				monitorPostList = append(monitorPostList, int(in.GetContentID()))
+			case pb.ContentType_COMMENT:
+				monitorCommentList = append(monitorCommentList, int(in.GetContentID()))
+			}
+		}
+	}()
+
+	// Send the updates
+	for {
+		// Send the updates for the posts
+		for _, postID := range monitorPostList {
+			post, err := s.sqlClient.GetPost(postID)
+			if err != nil {
+				log.Fatal(color.RedString("[MonitorUpdates] DB error: %v", err))
+			}
+
+			// Send the updates
+			response := &pb.MonitorUpdatesResponse{
+				ContentType: pb.ContentType_POST,
+				ContentID:   int32(postID),
+				Score:       post.Score,
+			}
+			log.Print(color.GreenString("[MonitorUpdates] Response: %v", response))
+			err = stream.Send(response)
+			if err != nil {
+				log.Print(color.RedString("[MonitorUpdates] Error: %v", err))
+				return err
+			}
+		}
+
+		// Send the updates for the comments
+		for _, commentID := range monitorCommentList {
+			comment, err := s.sqlClient.GetComment(commentID)
+			if err != nil {
+				log.Fatal(color.RedString("[MonitorUpdates] DB error: %v", err))
+			}
+
+			// Send the updates
+			response := &pb.MonitorUpdatesResponse{
+				ContentType: pb.ContentType_COMMENT,
+				ContentID:   int32(commentID),
+				Score:       comment.Score,
+			}
+			log.Print(color.GreenString("[MonitorUpdates] Response: %v", response))
+			err = stream.Send(response)
+			if err != nil {
+				log.Print(color.RedString("[MonitorUpdates] Error: %v", err))
+				return err
+			}
+		}
+
+		// Wait for 2 seconds before sending the updates again
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func main() {
