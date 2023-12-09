@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/fatih/color"
 	pb "github.com/tomy0000000/grpc-reddit/reddit/reddit"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -23,31 +23,52 @@ var (
 func runCreatePost(c pb.RedditClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
-	r, err := c.CreatePost(ctx, &pb.CreatePostRequest{Post: &pb.Post{Title: "Hello", Content: "World", SubReddit: &pb.SubReddit{Id: 1}, Author: &pb.User{Id: 1}}})
-	if err != nil {
-		log.Fatalf("could not create post: %v", err)
+
+	request := &pb.CreatePostRequest{
+		Post: &pb.Post{
+			Title:     "Hello",
+			Content:   "World",
+			SubReddit: &pb.SubReddit{Id: 1},
+			Author:    &pb.User{Id: 1},
+		},
 	}
-	log.Printf("Post Created: %v", r.GetPost())
+	log.Print(color.YellowString("[CreatePost] Sending: %v", request))
+
+	response, err := c.CreatePost(ctx, request)
+	if err != nil {
+		log.Fatal(color.RedString("[CreatePost] Error: %v", err))
+	}
+
+	log.Print(color.GreenString("[CreatePost] Received: %v", response))
 }
 
 func runVotePost(c pb.RedditClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
-	r, err := c.VotePost(ctx, &pb.VotePostRequest{PostID: int32(1), Upvote: true})
+
+	request := &pb.VotePostRequest{PostID: int32(1), Upvote: true}
+	log.Print(color.YellowString("[VotePost] Sending: %v", request))
+
+	response, err := c.VotePost(ctx, request)
 	if err != nil {
-		log.Fatalf("could not vote post: %v", err)
+		log.Fatal(color.RedString("[VotePost] Error: %v", err))
 	}
-	log.Printf("Post Voted: %v", r.GetScore())
+
+	log.Print(color.GreenString("[VotePost] Received: %v", response))
 }
 
 func runGetPost(c pb.RedditClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
-	r2, err := c.GetPost(ctx, &pb.GetPostRequest{PostID: int32(1)})
+
+	request := &pb.GetPostRequest{PostID: int32(1)}
+	log.Print(color.YellowString("[GetPost] Sending: %v", request))
+
+	response, err := c.GetPost(ctx, request)
 	if err != nil {
-		log.Fatalf("could not get post: %v", err)
+		log.Fatal(color.RedString("[GetPost] Error: %v", err))
 	}
-	log.Printf("Post Retrieved: %v", r2.GetPost())
+	log.Print(color.GreenString("[GetPost] Received: %v", response))
 }
 
 func main() {
@@ -55,7 +76,7 @@ func main() {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatal(color.RedString("did not connect: %v", err))
 	}
 	defer conn.Close()
 	c := pb.NewRedditClient(conn)
