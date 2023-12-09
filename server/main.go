@@ -121,6 +121,20 @@ func (s *gRPCserver) GetComment(ctx context.Context, in *pb.GetCommentRequest) (
 	return response, nil
 }
 
+func (s *gRPCserver) GetTopComments(ctx context.Context, in *pb.GetTopCommentsRequest) (*pb.GetTopCommentsResponse, error) {
+	log.Print(color.YellowString("[GetTopComments] Received: %v", in))
+
+	// Get the comments from the database
+	comments, err := s.sqlClient.GetTopComments(int(in.GetPostID()), int(in.GetQuantity()))
+	if err != nil {
+		log.Fatal(color.RedString("[GetTopComments] DB error: %v", err))
+	}
+
+	response := &pb.GetTopCommentsResponse{Comments: comments}
+	log.Print(color.GreenString("[GetTopComments] Reponse: %v", response))
+	return response, nil
+}
+
 func main() {
 	// Parse the flags
 	flag.Parse()
