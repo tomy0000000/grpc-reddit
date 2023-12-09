@@ -15,6 +15,8 @@ const (
 	TIMEOUT = 1000 * time.Second
 )
 
+type RedditUser = pb.User
+type RedditSubReddit = pb.SubReddit
 type RedditPost = pb.Post
 type RedditComment = pb.Comment
 
@@ -46,16 +48,16 @@ func (s *RedditAPIClient) close() {
 	s._conn.Close()
 }
 
-func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID int32, authorID int32) (*pb.Post, error) {
+func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID int32, authorID int32) (*RedditPost, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
 	request := &pb.CreatePostRequest{
-		Post: &pb.Post{
+		Post: &RedditPost{
 			Title:     title,
 			Content:   content,
-			SubReddit: &pb.SubReddit{Id: subRedditID},
-			Author:    &pb.User{Id: authorID},
+			SubReddit: &RedditSubReddit{Id: subRedditID},
+			Author:    &RedditUser{Id: authorID},
 		},
 	}
 	log.Print(color.YellowString("[CreatePost] Sending: %v", request))
@@ -70,11 +72,11 @@ func (s *RedditAPIClient) CreatePost(title string, content string, subRedditID i
 	return response.Post, nil
 }
 
-func (s *RedditAPIClient) VotePost(PostID int32, Upvote bool) (int32, error) {
+func (s *RedditAPIClient) VotePost(postID int32, upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.VotePostRequest{PostID: PostID, Upvote: Upvote}
+	request := &pb.VotePostRequest{PostID: postID, Upvote: upvote}
 	log.Print(color.YellowString("[VotePost] Sending: %v", request))
 
 	response, err := s._client.VotePost(ctx, request)
@@ -87,11 +89,11 @@ func (s *RedditAPIClient) VotePost(PostID int32, Upvote bool) (int32, error) {
 	return response.Score, nil
 }
 
-func (s *RedditAPIClient) GetPost(PostID int32) (*pb.Post, error) {
+func (s *RedditAPIClient) GetPost(postID int32) (*RedditPost, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.GetPostRequest{PostID: PostID}
+	request := &pb.GetPostRequest{PostID: postID}
 	log.Print(color.YellowString("[GetPost] Sending: %v", request))
 
 	response, err := s._client.GetPost(ctx, request)
@@ -103,14 +105,14 @@ func (s *RedditAPIClient) GetPost(PostID int32) (*pb.Post, error) {
 	return response.Post, nil
 }
 
-func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Comment, error) {
+func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
 	request := &pb.CreateCommentRequest{
-		Comment: &pb.Comment{
+		Comment: &RedditComment{
 			Content:  content,
-			Author:   &pb.User{Id: authorID},
+			Author:   &RedditUser{Id: authorID},
 			Parent:   pb.ContentType_POST,
 			ParentID: 1,
 		},
@@ -126,11 +128,11 @@ func (s *RedditAPIClient) CreateComment(authorID int32, content string) (*pb.Com
 	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) VoteComment(CommentID int32, Upvote bool) (int32, error) {
+func (s *RedditAPIClient) VoteComment(commentID int32, upvote bool) (int32, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.VoteCommentRequest{CommentID: CommentID, Upvote: Upvote}
+	request := &pb.VoteCommentRequest{CommentID: commentID, Upvote: upvote}
 	log.Print(color.YellowString("[VoteComment] Sending: %v", request))
 
 	response, err := s._client.VoteComment(ctx, request)
@@ -142,11 +144,11 @@ func (s *RedditAPIClient) VoteComment(CommentID int32, Upvote bool) (int32, erro
 	return response.Score, nil
 }
 
-func (s *RedditAPIClient) GetComment(CommentID int32) (*pb.Comment, error) {
+func (s *RedditAPIClient) GetComment(commentID int32) (*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	request := &pb.GetCommentRequest{CommentID: CommentID}
+	request := &pb.GetCommentRequest{CommentID: commentID}
 	log.Print(color.YellowString("[GetComment] Sending: %v", request))
 
 	response, err := s._client.GetComment(ctx, request)
@@ -158,11 +160,11 @@ func (s *RedditAPIClient) GetComment(CommentID int32) (*pb.Comment, error) {
 	return response.Comment, nil
 }
 
-func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Comment, error) {
+func (s *RedditAPIClient) GetTopComments(postID int32, quantity int32) ([]*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	requests := &pb.GetTopCommentsRequest{PostID: PostID, Quantity: Quantity}
+	requests := &pb.GetTopCommentsRequest{PostID: postID, Quantity: quantity}
 	log.Print(color.YellowString("[GetTopComments] Sending: %v", requests))
 
 	response, err := s._client.GetTopComments(ctx, requests)
@@ -174,11 +176,11 @@ func (s *RedditAPIClient) GetTopComments(PostID int32, Quantity int32) ([]*pb.Co
 	return response.Comments, nil
 }
 
-func (s *RedditAPIClient) ExpandCommentBranch(CommentID int32, quantity int32) ([]*pb.Comment, error) {
+func (s *RedditAPIClient) ExpandCommentBranch(commentID int32, quantity int32) ([]*RedditComment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	requests := &pb.ExpandCommentBranchRequest{CommentID: CommentID, Quantity: quantity}
+	requests := &pb.ExpandCommentBranchRequest{CommentID: commentID, Quantity: quantity}
 	log.Print(color.YellowString("[ExpandCommentBranch] Sending: %v", requests))
 
 	response, err := s._client.ExpandCommentBranch(ctx, requests)
